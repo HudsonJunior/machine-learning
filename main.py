@@ -14,35 +14,39 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
 
+baseDados = pd.read_excel(r'dry_bean_dataset.xlsx')
+valores_baseDados = baseDados.values
 
-dataset = pd.read_excel(r'dry_bean_dataset.xlsx')
-dataset_values = dataset.values
+X = valores_baseDados[:, 0:16]
+Y = valores_baseDados[:, 16]
 
-X = dataset_values[:, 0:16]
-Y = dataset_values[:, 16]
-
-X_train, X_validation, Y_train, Y_validation = train_test_split(
-    X, Y, test_size=0.10, random_state=1)
+X_treino, X_validacao, Y_treino, Y_validacao = train_test_split(
+    X, Y, test_size=0.2, random_state=1)
 
 # Modelos que avaliaremos para escolher entre os dois melhores
-modelos = [('LR', LogisticRegression(solver='liblinear', multi_class='ovr')),
-           ('LDA', LinearDiscriminantAnalysis()),
-           ('KNN', KNeighborsClassifier()),
-           ('CART', DecisionTreeClassifier()),
-           ('NB', GaussianNB()),
-           ('SVM', SVC(gamma='auto'))]
+modelo_LDA = LinearDiscriminantAnalysis()
+modelo_CART = DecisionTreeClassifier()
 
+modelo_LDA.fit(X_treino, Y_treino)
+modelo_CART.fit(X_treino, Y_treino)
 
-resultados = []
-nomes = []
+predicoes_LDA = modelo_LDA.predict(X_validacao)
+predicoes_CART = modelo_CART.predict(X_validacao)
 
-for nome, modelo in modelos:
-    kfold = StratifiedKFold(n_splits=10, random_state=1, shuffle=True)
-    results = cross_val_score(modelo, X_train, Y_train,
-                              cv=kfold, scoring='accuracy')
-    resultados.append(results)
-    nomes.append(nome)
-    print('%s: %f (%f)' % (nome, results.mean(), results.std()))
+print("Acurácia LDA: " + str(accuracy_score(Y_validacao, predicoes_LDA)))
+print("Acurácia CART: " + str(accuracy_score(Y_validacao, predicoes_CART)))
+
+print("\nMatriz de confusão LDA:")
+print(confusion_matrix(Y_validacao, predicoes_LDA))
+
+print("\nMatriz de confusão CART:")
+print(confusion_matrix(Y_validacao, predicoes_CART))
+
+print("\nClassificação LDA:")
+print(classification_report(Y_validacao, predicoes_LDA))
+
+print("\nClassificação CART:")
+print(classification_report(Y_validacao, predicoes_CART))
 
 # Escolher dataset
 # Treinar dois modelos de AM
@@ -52,7 +56,6 @@ for nome, modelo in modelos:
 
 # Treinou o modelo? Beleza!! Fazer 3 cenários ou mais
 # - na resolução de tarefas como classificação, regressoa,. clusterização, predição etc
-
 
 # ------------------------- SLIDES -----------------------------------------
 # Criar slides para apresentação do trabalho. Os slides devem conter no mínimo: Slide
