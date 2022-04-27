@@ -28,7 +28,7 @@ def apresentaResultados(name, Y_validacao, predicoes):
     print(classification_report(Y_validacao, predicoes))
 
 
-def getPredicoes(modelo, params, X_validacao, X_treino, Y_treino):
+def getPredicoes(modelo, params, X_treino, Y_treino, X_validacao):
     search_LDA = HalvingGridSearchCV(
         modelo, params, random_state=0).fit(X_treino, Y_treino)
 
@@ -36,25 +36,29 @@ def getPredicoes(modelo, params, X_validacao, X_treino, Y_treino):
 
 
 def main():
-    baseDados = pd.read_excel(r'dry_bean_dataset.xlsx')
-    valores_baseDados = baseDados.values
+    base_dados = pd.read_excel(r'dry_bean_dataset.xlsx')
+    valores_base_dados = base_dados.values
 
-    indexInicial = 0
-    indexMeio = int(len(valores_baseDados)/2)
-    indexFinal = len(valores_baseDados) - 1
+    index_inicial = 0
+    index_meio_1 = int(len(valores_base_dados)/3)
+    index_meio_2 = int((len(valores_base_dados)/3) * 2)
+    index_final = len(valores_base_dados) - 1
 
-    cenariosExtras = np.array([valores_baseDados[indexInicial],
-                               valores_baseDados[indexMeio], valores_baseDados[indexFinal]])
+    cenarios_extras = np.array([valores_base_dados[index_inicial],
+                               valores_base_dados[index_meio_1],
+                               valores_base_dados[index_meio_2],
+                               valores_base_dados[index_final]])
 
-    valores_baseDados = np.delete(valores_baseDados, indexFinal, axis=0)
-    valores_baseDados = np.delete(valores_baseDados, indexMeio, axis=0)
-    valores_baseDados = np.delete(valores_baseDados, indexInicial, axis=0)
+    valores_base_dados = np.delete(valores_base_dados, index_final, axis=0)
+    valores_base_dados = np.delete(valores_base_dados, index_meio_2, axis=0)
+    valores_base_dados = np.delete(valores_base_dados, index_meio_1, axis=0)
+    valores_base_dados = np.delete(valores_base_dados, index_inicial, axis=0)
 
-    X = valores_baseDados[:, 0:16]
-    Y = valores_baseDados[:, 16]
+    X = valores_base_dados[:, 0:16]
+    Y = valores_base_dados[:, 16]
 
-    X0 = cenariosExtras[:, 0:16]
-    Y0 = cenariosExtras[:, 16]
+    X0 = np.array(cenarios_extras[:, 0:16])
+    Y0 = np.array(cenarios_extras[:, 16])
 
     X_treino, X_validacao, Y_treino, Y_validacao = train_test_split(
         X, Y, test_size=0.2, random_state=1)
@@ -67,18 +71,18 @@ def main():
     param_grid_LDA = {"solver": ['svd', 'lsqr', 'eigen']}
 
     predicoes_LDA = getPredicoes(
-        modelo_LDA, param_grid_LDA, X_validacao, X_treino, Y_treino)
+        modelo_LDA, param_grid_LDA, X_treino, Y_treino, X_validacao)
 
-    predicoes_LDA0 = getPredicoes(
-        modelo_LDA, param_grid_LDA, X_validacao, X_treino, Y0)
+    predicoes_LDA_extra = getPredicoes(
+        modelo_LDA, param_grid_LDA, X_treino, Y_treino, X0)
 
-    apresentaResultados('LDA 0 ', X_validacao, predicoes_LDA0)
+    apresentaResultados('LDA 0', Y0, predicoes_LDA_extra)
 
-    param_grid_CART = {"criterion": [
-        "gini", "entropy"], "splitter": ["best", "random"]}
-
-    predicoes_CART = getPredicoes(
-        modelo_CART, param_grid_CART, X_validacao, X_treino, Y_treino)
+    # param_grid_CART = {"criterion": [
+    #     "gini", "entropy"], "splitter": ["best", "random"]}
+    #
+    # predicoes_CART = getPredicoes(
+    #     modelo_CART, param_grid_CART, X_validacao, X_treino, Y_treino)
 
     # param_grid_SVC = {"kernel": [
     #   "linear", "poly", "sigmoid", "precomputed"], "C": [pow(10, 5), pow(10, 6), pow(10, 7)]}
