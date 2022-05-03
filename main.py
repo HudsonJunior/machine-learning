@@ -30,7 +30,7 @@ def apresentaResultados(name, Y_validacao, predicoes):
 
 def calcularClassificacao(modelo, params, X_treino, Y_treino, X_validacao):
     # Aplicação da hiperparametrização a partir do:
-    # - Modelo
+    # - Modelo de treinamento
     # - Parâmetros definidos
     # - X_validação -> Para o caso do dataset completo, será 20% da base de teste
     #               -> Para o caso dos cenários extras, será os 4 cenários de uso de teste
